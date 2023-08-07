@@ -9,6 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -30,9 +34,8 @@ class StockServiceTest {
     }
 
     @Test
-    @DisplayName("재고감소")
-    void decreaseStock() {
-
+    @DisplayName("하나의 재고 감소 요청")
+    public void decrease() {
         // when
         stockService.decrease(1L, 1L);
 
@@ -40,5 +43,29 @@ class StockServiceTest {
         Stock stock = stockRepository.findById(1L).orElseThrow();
 
         assertThat(stock.getQuantity()).isEqualTo(99);
+    }
+
+    @Test
+    @DisplayName("동시에 100개의 재고 감소 요청")
+    public void decreaseAtTheSameTime() throws InterruptedException {
+        int threadCount = 100;
+        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+
+        for (int i = 0; i < 100; ++i) {
+            executorService.submit(() -> {
+                try {
+
+                    stockService.decrease(1L, 1L);
+                } finally {
+                    countDownLatch.countDown();
+                }
+            });
+        }
+
+        countDownLatch.await();
+
+        Stock stock = stockRepository.findById(1L).orElseThrow();
+        assertThat(stock.getQuantity()).isEqualTo(0);
     }
 }
