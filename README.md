@@ -51,3 +51,22 @@ public synchronized void decrease(Long productId, Long quantity) {
 따라서 서버가 2대 이상인 경우 DB 접근을 여러군데에서 할 수 있다는 문제가 있다.
 
 실제 운영중인 서비스는 대부분 서버가 2대 이상이기 때문에 synchronized 를 거의 사용하지 않는다.
+
+### 3. MySQL 을 활용한 방법
+1. Pessmistic Lock  
+데이터에 Lock을 걸어 정합성을 맞추는 방법이다.  
+exclusive lock을 걸게되면 다른 트랜잭션에서는 lock이 해제되기 전에 데이터를 가져갈 수 없게된다.  
+데드락이 걸릴 수 있기 때문에 주의해서 사용해야한다.  
+  
+
+2. Optimistic Lock  
+실제로 Lock을 이용하지 않고 버전을 이용함으로써 정합성을 맞추는 방법이다.  
+먼저 데이터를 읽은 후에 update를 수행할 때 내가 읽은 버전이 맞는지 확인하며 업데이트한다.  
+내가 읽은 버전에서 수정사항이 생겼을 때 application에서 다시 읽은 후에 작업을 수행해야 한다.  
+
+  
+3. Named Lock  
+이름을 가진 metadata lock 이다.  
+이름을 가진 lock을 획득한 후 해제할때까지 다른 세션은 이 lock을 획득할 수 없도록 한다.  
+주의할점으로는 트랜잭션이 종료될 때 lock이 자동으로 해제되지 않는다.
+별도의 명령어로 해제를 수행해주거나 선점시간이 끝나야 해제된다.
