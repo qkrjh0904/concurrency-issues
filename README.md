@@ -47,3 +47,7 @@ public synchronized void decrease(Long productId, Long quantity) {
     stockRepository.saveAndFlush(stock);
 }
 ```
+하지만 synchronized 는 하나의 프로세스에서만 보장이된다.  
+따라서 서버가 2대 이상인 경우 DB 접근을 여러군데에서 할 수 있다는 문제가 있다.
+
+실제 운영중인 서비스는 대부분 서버가 2대 이상이기 때문에 synchronized 를 거의 사용하지 않는다.
