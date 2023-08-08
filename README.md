@@ -57,6 +57,7 @@ public synchronized void decrease(Long productId, Long quantity) {
 데이터에 Lock을 걸어 정합성을 맞추는 방법이다.  
 exclusive lock을 걸게되면 다른 트랜잭션에서는 lock이 해제되기 전에 데이터를 가져갈 수 없게된다.  
 데드락이 걸릴 수 있기 때문에 주의해서 사용해야한다.  
+충돌이 빈번하게 일어난다면 Optimistic Lock보다 성능이 좋을 수 있다.
   
 
 2. Optimistic Lock  

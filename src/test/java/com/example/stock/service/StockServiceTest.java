@@ -22,6 +22,8 @@ class StockServiceTest {
     private StockService stockService;
     @Autowired
     private StockRepository stockRepository;
+    @Autowired
+    private PessimisticLockStockService pessimisticLockStockService;
 
     @BeforeEach
     void setUp() {
@@ -56,6 +58,29 @@ class StockServiceTest {
             executorService.submit(() -> {
                 try {
                     stockService.decrease(1L, 1L);
+                } finally {
+                    countDownLatch.countDown();
+                }
+            });
+        }
+
+        countDownLatch.await();
+
+        Stock stock = stockRepository.findByProductId(1L).orElseThrow();
+        assertThat(stock.getQuantity()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("Pessimistic Lock 을 활용한 동시에 100개의 재고 감소 요청")
+    public void decreaseAtTheSameTimeWithPessimisticLock() throws InterruptedException {
+        int threadCount = 100;
+        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+
+        for (int i = 0; i < 100; ++i) {
+            executorService.submit(() -> {
+                try {
+                    pessimisticLockStockService.decrease(1L, 1L);
                 } finally {
                     countDownLatch.countDown();
                 }
