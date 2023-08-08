@@ -48,16 +48,16 @@ public synchronized void decrease(Long productId, Long quantity) {
 }
 ```
 하지만 synchronized 는 하나의 프로세스에서만 보장이된다.  
-따라서 서버가 2대 이상인 경우 DB 접근을 여러군데에서 할 수 있다는 문제가 있다.
+따라서 서버가 2대 이상인 경우 DB 접근을 여러군데에서 할 수 있다는 문제가 있다.  
 
-실제 운영중인 서비스는 대부분 서버가 2대 이상이기 때문에 synchronized 를 거의 사용하지 않는다.
+실제 운영중인 서비스는 대부분 서버가 2대 이상이기 때문에 synchronized 를 거의 사용하지 않는다.  
 
 ### 3. MySQL 을 활용한 방법
 1. Pessmistic Lock  
 데이터에 Lock을 걸어 정합성을 맞추는 방법이다.  
 exclusive lock을 걸게되면 다른 트랜잭션에서는 lock이 해제되기 전에 데이터를 가져갈 수 없게된다.  
 데드락이 걸릴 수 있기 때문에 주의해서 사용해야한다.  
-충돌이 빈번하게 일어난다면 Optimistic Lock보다 성능이 좋을 수 있다.
+충돌이 빈번하게 일어난다면 Optimistic Lock보다 성능이 좋을 수 있다.  
   
 
 2. Optimistic Lock  
@@ -71,5 +71,6 @@ DB에 직접 Lock을 잡지 않아 Pessimistic Lock보다 성능은 좋지만, u
 3. Named Lock  
 이름을 가진 metadata lock 이다.  
 이름을 가진 lock을 획득한 후 해제할때까지 다른 세션은 이 lock을 획득할 수 없도록 한다.  
-주의할점으로는 트랜잭션이 종료될 때 lock이 자동으로 해제되지 않는다.
-별도의 명령어로 해제를 수행해주거나 선점시간이 끝나야 해제된다.
+주의할점으로는 트랜잭션이 종료될 때 lock이 자동으로 해제되지 않는다.  
+별도의 명령어로 해제를 수행해주거나 선점시간이 끝나야 해제된다.  
+별도의 데이터소스를 사용해야한다.  
