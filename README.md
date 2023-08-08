@@ -64,6 +64,8 @@ exclusive lock을 걸게되면 다른 트랜잭션에서는 lock이 해제되기
 실제로 Lock을 이용하지 않고 버전을 이용함으로써 정합성을 맞추는 방법이다.  
 먼저 데이터를 읽은 후에 update를 수행할 때 내가 읽은 버전이 맞는지 확인하며 업데이트한다.  
 내가 읽은 버전에서 수정사항이 생겼을 때 application에서 다시 읽은 후에 작업을 수행해야 한다.  
+DB에 직접 Lock을 잡지 않아 Pessimistic Lock보다 성능은 좋지만, update가 실패했을 때 재시도 로직을 개발자가 직접 작성해야한다.  
+충돌이 빈번하게 일어난다면 Pessimistic Lock을 사용하는 것이 좋다.  
 
   
 3. Named Lock  
