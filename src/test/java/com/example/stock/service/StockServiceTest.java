@@ -4,6 +4,7 @@ import com.example.stock.domain.entity.Stock;
 import com.example.stock.facade.LettuceLockStockFacade;
 import com.example.stock.facade.NamedLockStockFacade;
 import com.example.stock.facade.OptimisticLockStockFacade;
+import com.example.stock.facade.RedissonLockStockFacade;
 import com.example.stock.repository.StockRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +34,8 @@ class StockServiceTest {
     private LettuceLockStockFacade lettuceLockStockFacade;
     @Autowired
     private PessimisticLockStockService pessimisticLockStockService;
+    @Autowired
+    private RedissonLockStockFacade redissonLockStockFacade;
 
     @BeforeEach
     void setUp() {
@@ -163,6 +166,29 @@ class StockServiceTest {
                     lettuceLockStockFacade.decrease(1L, 1L);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
+                } finally {
+                    countDownLatch.countDown();
+                }
+            });
+        }
+
+        countDownLatch.await();
+
+        Stock stock = stockRepository.findByProductId(1L).orElseThrow();
+        assertThat(stock.getQuantity()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("Redisson 를 활용한 동시에 100개의 재고 감소 요청")
+    public void decreaseAtTheSameTimeWithRedisson() throws InterruptedException {
+        int threadCount = 100;
+        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+
+        for (int i = 0; i < 100; ++i) {
+            executorService.submit(() -> {
+                try {
+                    redissonLockStockFacade.decrease(1L, 1L);
                 } finally {
                     countDownLatch.countDown();
                 }
