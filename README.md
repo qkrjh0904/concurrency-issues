@@ -79,7 +79,23 @@ DB에 직접 Lock을 잡지 않아 Pessimistic Lock보다 성능은 좋지만, u
 1. Lettuce
 - setnx 명령어를 활용하여 분산락 구현  
 - spin lock 방식 : lock을 획득하려는 스레드가 락을 사용할 수 있는지 반복적으로 확인하며 lock획득을 시도하는 방식
+- 구현이 간단하다
+- spring data redis를 이용하면 lettuce 가 기본이기때문에 별도의 라이브러리를 사용하지 않아도 된다.
+- spin lock 방식이기 때문에 동시에 많은 스레드가 lock 획득 대기 상태라면 redis에 부하가 갈 수 있다.
 
 
 2. Redisson
-- pub-sub 기반으로 lock 구현 제공 
+- pub-sub 기반으로 lock을 구현한다. 따라서 lettuce와 비교했을 때 redis에 부하가 덜간다.
+- 락 획득 재시도를 기본으로 제공한다.
+- 별도의 라이브러리를 사용해야한다.
+- lock을 라이브러리 차원에서 제공해주기 때문에 사용법을 공부해야 한다.
+
+3. 실무에서는
+- 재시도가 필요하지 않은 lock은 lettuce 활용
+- 재시도가 필요한 경우에는 redisson을 활용
+
+4. MySQL vs Redis
+- 이미 MySQL을 사용하고 있다면 별도의 비용이 발생하지 않는다.
+- 어느정도 트래픽까지는 MySQL을 활용하면된다.
+- Redis가 성능이 더 좋다.
+- Redis는 추가적인 구축 비용과 인프라 비용이 든다.
