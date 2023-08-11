@@ -55,7 +55,6 @@ class StockServiceTest {
 
         // then
         Stock stock = stockRepository.findByProductId(1L).orElseThrow();
-
         assertThat(stock.getQuantity()).isEqualTo(99);
     }
 
@@ -63,7 +62,10 @@ class StockServiceTest {
     @DisplayName("동시에 100개의 재고 감소 요청")
     public void decreaseAtTheSameTime() throws InterruptedException {
         int threadCount = 100;
+        // thread pool 을 32개로 한 이유는?
         ExecutorService executorService = Executors.newFixedThreadPool(32);
+
+        // count down latch 는 설정한 count 만큼 스레드가 종료되길 기다린다.
         CountDownLatch countDownLatch = new CountDownLatch(threadCount);
 
         for (int i = 0; i < 100; ++i) {
